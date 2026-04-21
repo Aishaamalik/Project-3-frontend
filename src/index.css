@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Moon theme palette */
+  --bg-primary:    #05070F;
+  --bg-secondary:  #090C18;
+  --bg-elevated:   #0E1220;
+  --border:        rgba(196,181,253,0.07);
+  --border-hover:  rgba(196,181,253,0.15);
+
+  /* Moon silver + indigo accents */
+  --accent-primary:   #C4B5FD;   /* moon silver-violet */
+  --accent-secondary: #818CF8;   /* indigo */
+  --accent-gold:      #F0C674;   /* crescent gold */
+  --accent-glow:      rgba(196,181,253,0.25);
+  --accent-glow-gold: rgba(240,198,116,0.3);
+
+  --gradient-brand:  linear-gradient(135deg, #C4B5FD, #818CF8);
+  --gradient-moon:   linear-gradient(135deg, #F0C674, #C4B5FD, #818CF8);
+  --gradient-silver: linear-gradient(135deg, #E2E8F0, #C4B5FD);
+
+  --text-primary:   #EEF0FF;
+  --text-secondary: #A5B4FC;
+  --text-muted:     #4B5563;
+
+  --success: #34D399;
+  --error:   #F87171;
+
+  --glass-bg: rgba(9,12,24,0.75);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Deep space moon background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 15% 10%,  rgba(196,181,253,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 85% 85%,  rgba(129,140,248,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 30% at 70% 20%,  rgba(240,198,116,0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: bgShift 16s ease-in-out infinite alternate;
+}
+
+@keyframes bgShift {
+  0%   { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 1;   transform: scale(1.04); }
+}
+
+#root { position: relative; z-index: 1; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: rgba(196,181,253,0.25); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(196,181,253,0.5); }
+
+/* Gradient text */
+.gradient-text {
+  background: var(--gradient-moon);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-silver {
+  background: var(--gradient-silver);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--border);
+}
+
+/* Animations */
+@keyframes blink       { 0%,100%{opacity:1} 50%{opacity:0} }
+@keyframes float       { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+@keyframes moonGlow    { 0%,100%{box-shadow:0 0 12px rgba(196,181,253,0.3)} 50%{box-shadow:0 0 28px rgba(196,181,253,0.6),0 0 60px rgba(196,181,253,0.2)} }
+@keyframes moonRotate  { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes shimmer     { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+@keyframes gradientBorder { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+@keyframes starTwinkle { 0%,100%{opacity:0.2;transform:scale(0.8)} 50%{opacity:1;transform:scale(1.2)} }
+@keyframes craterPulse { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
