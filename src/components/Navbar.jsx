@@ -1,10 +1,11 @@
 import { NavLink, useLocation } from 'react-router-dom'
-import { Menu, X, BarChart2, FolderOpen, Settings, Keyboard } from 'lucide-react'
+import { Menu, X, Settings, Keyboard, LogOut } from 'lucide-react'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import MoonLogo from './MoonLogo'
 import MoonPhase from './MoonPhase'
 import KeyboardShortcutsModal from './KeyboardShortcutsModal'
+import { useAuth } from '../context/AuthContext'
 import styles from './Navbar.module.css'
 
 const links = [
@@ -19,6 +20,7 @@ export default function Navbar() {
   const [open, setOpen]         = useState(false)
   const [showKeys, setShowKeys] = useState(false)
   const location = useLocation()
+  const { user, logout } = useAuth()
 
   return (
     <>
@@ -51,6 +53,9 @@ export default function Navbar() {
 
           <div className={styles.right}>
             <div className={styles.desktopOnly}><MoonPhase/></div>
+            {user && (
+              <span className={styles.username}>👤 {user.username}</span>
+            )}
             <motion.button className={styles.iconBtn} onClick={() => setShowKeys(true)}
               whileHover={{ scale:1.05 }} whileTap={{ scale:0.9 }} title="Keyboard shortcuts">
               <Keyboard size={16}/>
@@ -58,6 +63,12 @@ export default function Navbar() {
             <NavLink to="/settings" className={({ isActive }) => `${styles.iconBtn} ${isActive ? styles.iconActive : ''}`}>
               <Settings size={16}/>
             </NavLink>
+            {user && (
+              <motion.button className={`${styles.iconBtn} ${styles.logoutBtn}`}
+                onClick={logout} whileHover={{ scale:1.05 }} whileTap={{ scale:0.9 }} title="Log out">
+                <LogOut size={16}/>
+              </motion.button>
+            )}
             <motion.button className={styles.menuBtn} onClick={() => setOpen(o => !o)} whileTap={{ scale:0.9 }}>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div key={open?'x':'menu'}
