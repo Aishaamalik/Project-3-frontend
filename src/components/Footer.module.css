@@ -1,6 +1,6 @@
 .footer {
   border-top: 1px solid var(--border);
-  background: rgba(5,7,15,0.8);
+  background: rgba(44,54,57,0.82);
   backdrop-filter: blur(20px);
   margin-top: auto;
 }
@@ -46,7 +46,7 @@
 
 .link:hover {
   color: var(--text-secondary);
-  background: rgba(196,181,253,0.05);
+  background: rgba(220,215,201,0.06);
 }
 
 .copy {

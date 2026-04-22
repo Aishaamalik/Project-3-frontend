@@ -11,5 +11,5 @@
   transition: color 0.15s;
 }
 
-.star.active { color: #F0C674; }
+.star.active { color: var(--accent-primary); }
 .star:disabled { cursor: default; }

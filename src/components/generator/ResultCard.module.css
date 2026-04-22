@@ -10,7 +10,7 @@
   position: absolute;
   inset: -1px;
   border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, #F0C674, #C4B5FD, #818CF8, #F0C674);
+  background: linear-gradient(135deg, #DCD7C9, #A27B5C, #3F4E4F, #DCD7C9);
   background-size: 300% 300%;
   opacity: 0;
   z-index: -1;
@@ -55,15 +55,15 @@
 }
 
 .styleBadge {
-  background: rgba(196,181,253,0.25);
-  color: #EDE9FE;
-  border: 1px solid rgba(196,181,253,0.3);
+  background: rgba(220,215,201,0.18);
+  color: var(--text-primary);
+  border: 1px solid rgba(220,215,201,0.24);
 }
 
 .sizeBadge {
-  background: rgba(0,0,0,0.5);
+  background: rgba(44,54,57,0.72);
   color: var(--text-secondary);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(220,215,201,0.12);
 }
 
 .favBtn {
@@ -73,9 +73,9 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(44,54,57,0.72);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(240,198,116,0.2);
+  border: 1px solid rgba(162,123,92,0.28);
   color: var(--text-secondary);
   cursor: pointer;
   display: flex;
@@ -84,8 +84,8 @@
   transition: all 0.2s;
 }
 
-.favBtn:hover { background: rgba(240,198,116,0.15); border-color: rgba(240,198,116,0.4); }
-.favBtn.favActive { color: #F0C674; border-color: rgba(240,198,116,0.5); background: rgba(240,198,116,0.15); }
+.favBtn:hover { background: rgba(162,123,92,0.18); border-color: rgba(162,123,92,0.45); }
+.favBtn.favActive { color: var(--accent-primary); border-color: rgba(162,123,92,0.52); background: rgba(162,123,92,0.18); }
 
 .footer {
   padding: 20px 24px;
@@ -116,7 +116,7 @@
   gap: 6px;
   padding: 8px 16px;
   border-radius: var(--radius-sm);
-  background: rgba(196,181,253,0.05);
+  background: rgba(220,215,201,0.06);
   border: 1px solid var(--border);
   color: var(--text-secondary);
   font-size: 13px;
@@ -127,7 +127,7 @@
 }
 
 .actionBtn:hover {
-  background: rgba(196,181,253,0.1);
+  background: rgba(220,215,201,0.1);
   border-color: var(--border-hover);
   color: var(--text-primary);
 }

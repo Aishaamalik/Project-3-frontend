@@ -57,7 +57,7 @@ export default function ResultCard({ image, onRegenerate }) {
             <motion.div key={image.favorite ? 'fav' : 'unfav'}
               initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.5, opacity: 0 }} transition={{ duration: 0.2 }}>
-              <Heart size={16} fill={image.favorite ? '#F0C674' : 'none'} />
+              <Heart size={16} fill={image.favorite ? '#A27B5C' : 'none'} />
             </motion.div>
           </AnimatePresence>
         </motion.button>

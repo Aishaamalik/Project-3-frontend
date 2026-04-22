@@ -118,7 +118,7 @@ export default function HistoryPage() {
                     <div className={styles.cardActions}>
                       <button className={`${styles.iconBtn} ${img.favorite ? styles.favActive : ''}`}
                         onClick={() => toggleFavorite(img.id)} title="Favorite">
-                        <Heart size={13} fill={img.favorite ? '#F0C674' : 'none'}/>
+                        <Heart size={13} fill={img.favorite ? '#A27B5C' : 'none'}/>
                       </button>
                       <select className={styles.colSelect}
                         value={img.collection || ''}

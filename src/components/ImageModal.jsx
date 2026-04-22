@@ -102,7 +102,7 @@ export default function ImageModal({ image, onClose }) {
               </button>
               <button className={`${styles.btn} ${image.favorite ? styles.favActive : ''}`}
                 onClick={() => toggleFavorite(image.id)}>
-                <Heart size={15} fill={image.favorite ? '#F0C674' : 'none'} />
+                <Heart size={15} fill={image.favorite ? '#A27B5C' : 'none'} />
                 {image.favorite ? 'Unfavorite' : 'Favorite'}
               </button>
               <button className={`${styles.btn} ${copied ? styles.copied : ''}`} onClick={handleCopy}>

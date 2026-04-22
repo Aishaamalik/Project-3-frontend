@@ -36,7 +36,7 @@ export default function MoonPhase() {
     >
       <motion.span
         className={styles.emoji}
-        animate={{ filter: ['drop-shadow(0 0 4px rgba(240,198,116,0.4))', 'drop-shadow(0 0 10px rgba(240,198,116,0.8))', 'drop-shadow(0 0 4px rgba(240,198,116,0.4))'] }}
+        animate={{ filter: ['drop-shadow(0 0 4px rgba(162,123,92,0.28))', 'drop-shadow(0 0 10px rgba(220,215,201,0.5))', 'drop-shadow(0 0 4px rgba(162,123,92,0.28))'] }}
         transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
       >
         {phase.emoji}

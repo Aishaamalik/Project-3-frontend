@@ -15,30 +15,30 @@ export default function ParticleBackground() {
     resize()
     window.addEventListener('resize', resize)
 
-    // Stars — tiny, mostly white/silver, some gold
-    const stars = Array.from({ length: 120 }, () => ({
+    // Ambient specks in the new earthy palette
+    const stars = Array.from({ length: 96 }, () => ({
       x:     Math.random() * window.innerWidth,
       y:     Math.random() * window.innerHeight,
-      r:     Math.random() * 1.2 + 0.2,
-      alpha: Math.random() * 0.7 + 0.1,
-      twinkleSpeed: Math.random() * 0.02 + 0.005,
+      r:     Math.random() * 1.4 + 0.3,
+      alpha: Math.random() * 0.45 + 0.08,
+      twinkleSpeed: Math.random() * 0.014 + 0.004,
       twinkleOffset: Math.random() * Math.PI * 2,
-      color: Math.random() > 0.85
-        ? '240,198,116'   // gold star
-        : Math.random() > 0.5
-          ? '196,181,253' // silver-violet
-          : '238,240,255', // white
+      color: Math.random() > 0.75
+        ? '162,123,92'
+        : Math.random() > 0.45
+          ? '220,215,201'
+          : '63,78,79',
     }))
 
     // Slow drifting dust particles
-    const dust = Array.from({ length: 30 }, () => ({
+    const dust = Array.from({ length: 26 }, () => ({
       x:     Math.random() * window.innerWidth,
       y:     Math.random() * window.innerHeight,
       r:     Math.random() * 2 + 0.5,
       dx:    (Math.random() - 0.5) * 0.15,
       dy:    (Math.random() - 0.5) * 0.15,
-      alpha: Math.random() * 0.15 + 0.03,
-      color: Math.random() > 0.5 ? '196,181,253' : '129,140,248',
+      alpha: Math.random() * 0.12 + 0.03,
+      color: Math.random() > 0.5 ? '162,123,92' : '220,215,201',
     }))
 
     let t = 0

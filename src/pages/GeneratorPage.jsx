@@ -92,7 +92,7 @@ export default function GeneratorPage() {
         <motion.div className={styles.hero} variants={containerVariants} initial="hidden" animate="visible">
           <motion.div variants={itemVariants}>
             <motion.div className={styles.badge}
-              animate={{ boxShadow:['0 0 0px rgba(196,181,253,0)','0 0 20px rgba(196,181,253,0.4)','0 0 0px rgba(196,181,253,0)'] }}
+              animate={{ boxShadow:['0 0 0px rgba(220,215,201,0)','0 0 20px rgba(162,123,92,0.35)','0 0 0px rgba(220,215,201,0)'] }}
               transition={{ duration:3, repeat:Infinity, ease:'easeInOut' }}>
               🎨 DreamCanvas Generator
             </motion.div>
@@ -107,7 +107,7 @@ export default function GeneratorPage() {
         <motion.div className={`${styles.card} glass`}
           variants={itemVariants} initial="hidden" animate="visible" transition={{ delay:0.3 }}
           onKeyDown={handleKeyDown}
-          whileHover={{ boxShadow:'0 0 40px rgba(196,181,253,0.08)' }}>
+          whileHover={{ boxShadow:'0 0 40px rgba(162,123,92,0.12)' }}>
 
           <PromptInput value={prompt} onChange={setPrompt} suggestions={SUGGESTIONS}/>
 

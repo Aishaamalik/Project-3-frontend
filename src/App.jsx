@@ -66,13 +66,13 @@ export default function App() {
             position="top-right"
             toastOptions={{
               style: {
-                background:'#0E1220', color:'#EEF0FF',
-                border:'1px solid rgba(196,181,253,0.12)',
+                background:'#3F4E4F', color:'#F4F0E8',
+                border:'1px solid rgba(220,215,201,0.18)',
                 borderRadius:'12px', fontSize:'14px',
-                boxShadow:'0 8px 32px rgba(0,0,0,0.5)',
+                boxShadow:'0 8px 32px rgba(0,0,0,0.32)',
               },
-              success: { iconTheme:{ primary:'#34D399', secondary:'#0E1220' } },
-              error:   { iconTheme:{ primary:'#F87171', secondary:'#0E1220' } },
+              success: { iconTheme:{ primary:'#A27B5C', secondary:'#3F4E4F' } },
+              error:   { iconTheme:{ primary:'#F87171', secondary:'#3F4E4F' } },
             }}
           />
         </BrowserRouter>

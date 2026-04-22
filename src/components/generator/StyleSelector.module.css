@@ -13,7 +13,7 @@
 .btn {
   padding: 8px 16px;
   border-radius: var(--radius-sm);
-  background: rgba(196,181,253,0.04);
+  background: rgba(220,215,201,0.05);
   border: 1px solid var(--border);
   color: var(--text-secondary);
   font-size: 13px;
@@ -24,14 +24,14 @@
 }
 
 .btn:hover {
-  background: rgba(196,181,253,0.08);
+  background: rgba(220,215,201,0.1);
   border-color: var(--border-hover);
   color: var(--text-primary);
 }
 
 .btn.active {
-  background: rgba(196,181,253,0.14);
-  border-color: rgba(196,181,253,0.35);
-  color: var(--accent-primary);
-  box-shadow: 0 0 12px rgba(196,181,253,0.1);
+  background: rgba(162,123,92,0.16);
+  border-color: rgba(162,123,92,0.34);
+  color: var(--accent-secondary);
+  box-shadow: 0 0 12px rgba(162,123,92,0.16);
 }

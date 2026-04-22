@@ -49,9 +49,9 @@ export default function StatsPage() {
 
         {/* Stat cards */}
         <motion.div className={styles.grid} variants={container} initial="hidden" animate="visible">
-          <StatCard icon={Image}    label="Total Images"   value={stats.total}     sub={`${stats.thisWeek} this week`} color="rgba(196,181,253,0.15)" />
-          <StatCard icon={Heart}    label="Favorites"      value={stats.favorites} sub={`${stats.total ? Math.round(stats.favorites/stats.total*100) : 0}% of total`} color="rgba(240,198,116,0.15)" />
-          <StatCard icon={Star}     label="Avg Rating"     value={stats.avgRating} sub="out of 5 stars"  color="rgba(129,140,248,0.15)" />
+          <StatCard icon={Image}    label="Total Images"   value={stats.total}     sub={`${stats.thisWeek} this week`} color="rgba(220,215,201,0.15)" />
+          <StatCard icon={Heart}    label="Favorites"      value={stats.favorites} sub={`${stats.total ? Math.round(stats.favorites/stats.total*100) : 0}% of total`} color="rgba(162,123,92,0.18)" />
+          <StatCard icon={Star}     label="Avg Rating"     value={stats.avgRating} sub="out of 5 stars"  color="rgba(63,78,79,0.5)" />
           <StatCard icon={Zap}      label="This Week"      value={stats.thisWeek}  sub="new generations" color="rgba(52,211,153,0.15)" />
         </motion.div>
 
