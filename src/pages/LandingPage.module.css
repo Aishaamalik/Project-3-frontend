@@ -83,7 +83,7 @@
     radial-gradient(circle at top,    hsl(185 100% 63% / 0.22), transparent 28%),
     radial-gradient(circle at 80% 20%, hsl(334 90% 65% / 0.18), transparent 24%),
     radial-gradient(circle at 50% 100%,hsl(42  96% 64% / 0.12), transparent 26%);
-  animation: gradShift 12s ease infinite;
+  animation: gradShift 20s ease infinite;
   background-size: 200% 200%;
 }
 
@@ -264,7 +264,6 @@
   font-family: inherit;
   box-shadow: var(--lp-glow);
   transition: all 0.25s;
-  animation: gradShift 12s ease infinite;
 }
 .btnHeroPrimary:hover { transform: translateY(-2px); box-shadow: 0 18px 50px hsl(334 90% 65% / 0.35); }
 
@@ -1045,7 +1044,6 @@
   padding: 3rem 2rem;
   color: hsl(230 44% 10%);
   box-shadow: var(--lp-glow);
-  animation: gradShift 12s ease infinite;
 }
 @media (min-width: 768px) { .ctaCard { padding: 3rem; } }
 

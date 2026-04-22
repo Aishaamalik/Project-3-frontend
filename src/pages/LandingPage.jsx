@@ -1,6 +1,6 @@
 
-import { useMemo, useState } from 'react'
-import { motion, AnimatePresence, useScroll, useSpring, useTransform } from 'framer-motion'
+import { useMemo, useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowRight, Bot, Gauge, ImagePlus, Layers3, MoveRight,
   Sparkles, WandSparkles, Zap, X, ChevronRight, Star,
@@ -59,7 +59,7 @@ const PERF_BARS = [
 const TRUST_BADGES = ['Faster ideation', 'Sharper prompts', 'Rich style control', 'Minimal UI friction']
 
 const TESTIMONIALS = [
-  { name: 'Sarah K.',  role: 'Creative Director', text: 'LunarAI completely changed how our team ideates. The prompt enhancement alone saves hours every week.', stars: 5 },
+  { name: 'Sarah K.',  role: 'Creative Director', text: 'DreamCanvas completely changed how our team ideates. The prompt enhancement alone saves hours every week.', stars: 5 },
   { name: 'Marcus T.', role: 'Indie Game Dev',     text: 'I generate concept art in seconds. The cinematic style output is unreal — literally looks like a movie still.', stars: 5 },
   { name: 'Priya M.',  role: 'Brand Strategist',   text: 'The collections feature keeps everything organised. Best AI image tool I have used by a wide margin.', stars: 5 },
 ]
@@ -81,18 +81,42 @@ const fadeUp = {
 
 /* ── Animated count badge ────────────────────────────────── */
 function CountBadge({ value, suffix, label }) {
-  const { scrollYProgress } = useScroll()
-  const animated = useTransform(scrollYProgress, [0, 0.35], [0, value])
-  const smooth   = useSpring(animated, { stiffness: 120, damping: 20 })
-  const rounded  = useTransform(smooth, v => value % 1 === 0 ? Math.round(v) : Number(v.toFixed(1)))
+  const [display, setDisplay] = useState(0)
+  const ref = useRef(null)
+  const started = useRef(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started.current) {
+        started.current = true
+        const isDecimal = value % 1 !== 0
+        const duration = 1200
+        const start = performance.now()
+        const tick = (now) => {
+          const progress = Math.min((now - start) / duration, 1)
+          const eased = 1 - Math.pow(1 - progress, 3)
+          const current = value * eased
+          setDisplay(isDecimal ? Number(current.toFixed(1)) : Math.round(current))
+          if (progress < 1) requestAnimationFrame(tick)
+        }
+        requestAnimationFrame(tick)
+        observer.disconnect()
+      }
+    }, { threshold: 0.3 })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [value])
+
   return (
-    <motion.div {...fadeUp} className={styles.statCard}
+    <motion.div ref={ref} {...fadeUp} className={styles.statCard}
       onMouseMove={e => {
         const r = e.currentTarget.getBoundingClientRect()
         e.currentTarget.style.setProperty('--sx', `${e.clientX - r.left}px`)
         e.currentTarget.style.setProperty('--sy', `${e.clientY - r.top}px`)
       }}>
-      <div className={styles.statValue}><motion.span>{rounded}</motion.span>{suffix}</div>
+      <div className={styles.statValue}><span>{display}</span>{suffix}</div>
       <p className={styles.statLabel}>{label}</p>
     </motion.div>
   )
@@ -202,11 +226,11 @@ export default function LandingPage() {
   const [cursor, setCursor]     = useState({ x: 0, y: 0, visible: false })
 
   const floatingNodes = useMemo(() =>
-    Array.from({ length: 12 }, (_, i) => ({
+    Array.from({ length: 6 }, (_, i) => ({
       id: i, size: 6 + ((i * 7) % 18),
       left: `${8 + ((i * 9) % 84)}%`,
       top:  `${6 + ((i * 11) % 88)}%`,
-      delay: i * 0.4, duration: 5 + (i % 4),
+      delay: i * 0.6, duration: 7 + (i % 4),
     })), [])
 
   return (
@@ -233,10 +257,10 @@ export default function LandingPage() {
         ))}
         <motion.div className={styles.bgBlob1}
           animate={{ y: [0, 30, 0], x: [0, 20, 0] }}
-          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}/>
+          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut', delay: 1 }}/>
         <motion.div className={styles.bgBlob2}
           animate={{ y: [0, -24, 0], x: [0, -28, 0] }}
-          transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}/>
+          transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut', delay: 2 }}/>
       </div>
 
       {/* ── Header ── */}
@@ -245,7 +269,7 @@ export default function LandingPage() {
           <a href="#" className={styles.logoRow}>
             <span className={styles.logoIcon}><Sparkles size={18}/></span>
             <div>
-              <p className={styles.logoName}>Lunar<span className={styles.logoGrad}>AI</span></p>
+              <p className={styles.logoName}>Dream<span className={styles.logoGrad}>Canvas</span></p>
               <p className={styles.logoSub}>Text-to-Image Studio</p>
             </div>
           </a>
@@ -304,7 +328,7 @@ export default function LandingPage() {
                   {/* spinning ring */}
                   <motion.div className={styles.spinRing}
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 14, repeat: Infinity, ease: 'linear' }}>
+                    transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}>
                     <span className={styles.spinDot}/>
                   </motion.div>
 
@@ -341,7 +365,7 @@ export default function LandingPage() {
                             <motion.div key={i} className={styles.skeletonBar}
                               style={{ width: w }}
                               animate={{ opacity: [0.35, 0.9, 0.35] }}
-                              transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.2 }}/>
+                              transition={{ duration: 2.4, repeat: Infinity, delay: i * 0.3 }}/>
                           ))}
                         </div>
                       </div>
@@ -416,7 +440,7 @@ export default function LandingPage() {
                   </div>
                   <motion.div className={styles.stepOrb}
                     animate={{ rotate: i % 2 === 0 ? 360 : -360 }}
-                    transition={{ duration: 18 - i * 2, repeat: Infinity, ease: 'linear' }}>
+                    transition={{ duration: 24 - i * 2, repeat: Infinity, ease: 'linear' }}>
                     <span className={styles.stepOrbDot}/>
                   </motion.div>
                 </motion.div>
@@ -519,7 +543,7 @@ export default function LandingPage() {
             <motion.div {...fadeUp} className={styles.sectionHead}>
               <div className={styles.glassChip}>Testimonials</div>
               <h2 className={styles.sectionTitle}>Loved by creators worldwide</h2>
-              <p className={styles.sectionSub}>See what designers, developers, and artists are saying about LunarAI.</p>
+              <p className={styles.sectionSub}>See what designers, developers, and artists are saying about DreamCanvas.</p>
             </motion.div>
             <div className={styles.testimonialGrid}>
               {TESTIMONIALS.map((t, i) => (
@@ -613,7 +637,7 @@ export default function LandingPage() {
                       {['Editorial portrait · glowing rim light','Anime skyline · rain reflections','Luxury product shot · studio bloom'].map((line, i) => (
                         <motion.div key={line} className={styles.ctaQueueItem}
                           animate={{ x: [0, 8, 0] }}
-                          transition={{ duration: 4 + i, repeat: Infinity, ease: 'easeInOut' }}>
+                          transition={{ duration: 6 + i * 2, repeat: Infinity, ease: 'easeInOut' }}>
                           {line}
                         </motion.div>
                       ))}
@@ -634,7 +658,7 @@ export default function LandingPage() {
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <div>
-            <p className={styles.footerBrand}>LunarAI</p>
+            <p className={styles.footerBrand}>DreamCanvas</p>
             <p className={styles.footerSub}>Futuristic text-to-image experiences, crafted for premium product storytelling.</p>
           </div>
           <div className={styles.footerLinks}>

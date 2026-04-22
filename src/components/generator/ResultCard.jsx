@@ -32,7 +32,7 @@ export default function ResultCard({ image, onRegenerate }) {
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url; a.download = `lunar-ai-${image.id}.jpg`; a.click()
+      a.href = url; a.download = `dreamcanvas-${image.id}.jpg`; a.click()
       URL.revokeObjectURL(url)
       toast.success('Image downloaded!')
     } catch { toast.error('Download failed') }

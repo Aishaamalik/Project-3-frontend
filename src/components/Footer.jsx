@@ -8,14 +8,14 @@ export default function Footer() {
       <div className={styles.inner}>
         <div className={styles.brand}>
           <MoonLogo size={24}/>
-          <span className={styles.name}>Lunar<span className="gradient-text">AI</span></span>
+          <span className={styles.name}>Dream<span className="gradient-text">Canvas</span></span>
         </div>
         <nav className={styles.links}>
           {[['/', 'Generate'], ['/gallery', 'Gallery'], ['/history', 'History'], ['/collections', 'Collections'], ['/stats', 'Stats']].map(([to, label]) => (
             <NavLink key={to} to={to} className={styles.link}>{label}</NavLink>
           ))}
         </nav>
-        <p className={styles.copy}>© 2026 LunarAI · Built with moonlight & React</p>
+        <p className={styles.copy}>© 2026 DreamCanvas · Built with moonlight & React</p>
       </div>
     </footer>
   )

@@ -94,7 +94,7 @@ export default function GeneratorPage() {
             <motion.div className={styles.badge}
               animate={{ boxShadow:['0 0 0px rgba(196,181,253,0)','0 0 20px rgba(196,181,253,0.4)','0 0 0px rgba(196,181,253,0)'] }}
               transition={{ duration:3, repeat:Infinity, ease:'easeInOut' }}>
-              🌙 Lunar AI Generator
+              🎨 DreamCanvas Generator
             </motion.div>
           </motion.div>
           <motion.h1 className={styles.title} variants={itemVariants}><TypewriterText/></motion.h1>

@@ -54,7 +54,7 @@ export default function SettingsPage() {
       <div className={styles.container}>
         <motion.div className={styles.header} initial={{ opacity:0, y:-16 }} animate={{ opacity:1, y:0 }}>
           <h1 className={styles.title}>Settings</h1>
-          <p className={styles.subtitle}>Customize your Lunar AI experience</p>
+          <p className={styles.subtitle}>Customize your DreamCanvas experience</p>
         </motion.div>
 
         {/* Generation defaults */}
@@ -135,7 +135,7 @@ export default function SettingsPage() {
           <div className={styles.about}>
             <div className={styles.aboutLogo}>🌙</div>
             <div>
-              <p className={styles.aboutName}>Lunar AI</p>
+              <p className={styles.aboutName}>DreamCanvas</p>
               <p className={styles.aboutVersion}>Version 1.0.0 — Moon Edition</p>
               <p className={styles.aboutDesc}>A premium AI image generation experience built with React, Framer Motion, and moonlight.</p>
             </div>

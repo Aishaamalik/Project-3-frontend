@@ -31,7 +31,7 @@ export default function Navbar() {
 
           <NavLink to="/" className={styles.logo}>
             <MoonLogo size={34}/>
-            <span className={styles.logoText}>Lunar<span className="gradient-text">AI</span></span>
+            <span className={styles.logoText}>Dream<span className="gradient-text">Canvas</span></span>
           </NavLink>
 
           <ul className={styles.links}>
