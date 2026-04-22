@@ -1,48 +1,104 @@
-import { useState, useRef } from 'react'
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
+
+import { useMemo, useState } from 'react'
+import { motion, AnimatePresence, useScroll, useSpring, useTransform } from 'framer-motion'
 import {
-  ArrowRight, Sparkles, ImagePlus, WandSparkles, Layers3, Gauge,
-  Zap, X, ChevronRight
+  ArrowRight, Bot, Gauge, ImagePlus, Layers3, MoveRight,
+  Sparkles, WandSparkles, Zap, X, ChevronRight, Star,
+  Shield, Cpu, Palette, Users, TrendingUp, Check
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import MoonLogo from '../components/MoonLogo'
 import styles from './LandingPage.module.css'
+import imgArchitecture from '../assets/gallery-architecture.jpg'
+import imgAnime        from '../assets/gallery-anime.jpg'
+import imgArt          from '../assets/gallery-art.jpg'
+import imgLandscape    from '../assets/gallery-landscape.jpg'
+import imgPortrait     from '../assets/gallery-portrait.jpg'
+import imgPortraitV2   from '../assets/gallery-portrait-v2.jpg'
 
-/* ─── static data ─────────────────────────────────────────── */
-const FEATURES = [
+/* ── static data ─────────────────────────────────────────── */
+const FEATURE_CARDS = [
   { icon: ImagePlus,    title: 'AI Image Generation',  desc: 'Transform a sentence into polished, high-resolution visuals with striking detail.' },
   { icon: WandSparkles, title: 'Prompt Enhancement',   desc: 'Your ideas are auto-refined into richer prompts for sharper style, lighting, and depth.' },
-  { icon: Layers3,      title: 'Multiple Styles',      desc: 'Jump between anime, photoreal, cinematic, digital art, and surreal outputs instantly.' },
+  { icon: Layers3,      title: 'Multiple Styles',      desc: 'Jump between anime, photoreal, concept art, editorial, and surreal outputs instantly.' },
   { icon: Gauge,        title: 'Fast & Scalable',      desc: 'Built for speed with consistent quality whether you create one concept or a full campaign.' },
 ]
 
 const STEPS = [
   { n: '01', title: 'Enter Prompt',       desc: 'Describe the subject, style, lighting, or mood in natural language.' },
   { n: '02', title: 'AI Enhances Prompt', desc: 'The system expands your input into a production-ready creative direction.' },
-  { n: '03', title: 'Get Your Image',     desc: 'Receive vivid visuals optimised for inspiration, design, and rapid iteration.' },
+  { n: '03', title: 'Get Generated Image',desc: 'Receive vivid visuals optimised for inspiration, design, and rapid iteration.' },
 ]
 
 const GALLERY = [
-  { seed: 'moon1',    tag: 'Cinematic',   title: 'Lunar Citadel'    },
-  { seed: 'anime2',   tag: 'Anime',       title: 'Neon Skyline'     },
-  { seed: 'art3',     tag: 'Digital Art', title: 'Synthetic Bloom'  },
-  { seed: 'real4',    tag: 'Realistic',   title: 'Dream Terrain'    },
+  { img: imgArchitecture, tag: 'Architectural', title: 'Neon Structure'  },
+  { img: imgAnime,        tag: 'Anime',         title: 'Future Avenue'   },
+  { img: imgArt,          tag: 'Art',           title: 'Synthetic Bloom' },
+  { img: imgLandscape,    tag: 'Realistic',     title: 'Dream Terrain'   },
 ]
 
 const STATS = [
-  { value: '12M+', label: 'images generated' },
-  { value: '4.9',  label: 'creator rating'   },
-  { value: '120+', label: 'style presets'     },
+  { value: 12, suffix: 'M+', label: 'images imagined'  },
+  { value: 4.9, suffix: '/5', label: 'creator rating'  },
+  { value: 120, suffix: '+',  label: 'style presets'   },
 ]
+
+const WHY_US = [
+  'Intuitive prompt flow for beginners and pros',
+  'Polished glassmorphism surfaces with motion-first feedback',
+  'Scalable image workflows for campaigns, concepts, and product visuals',
+  'Premium visual direction tuned for startup-grade presentation',
+]
+
+const PERF_BARS = [
+  { label: 'Prompt parsing',   pct: 88 },
+  { label: 'Style adaptation', pct: 94 },
+  { label: 'Visual fidelity',  pct: 99 },
+]
+
+const TRUST_BADGES = ['Faster ideation', 'Sharper prompts', 'Rich style control', 'Minimal UI friction']
+
+const TESTIMONIALS = [
+  { name: 'Sarah K.',  role: 'Creative Director', text: 'LunarAI completely changed how our team ideates. The prompt enhancement alone saves hours every week.', stars: 5 },
+  { name: 'Marcus T.', role: 'Indie Game Dev',     text: 'I generate concept art in seconds. The cinematic style output is unreal — literally looks like a movie still.', stars: 5 },
+  { name: 'Priya M.',  role: 'Brand Strategist',   text: 'The collections feature keeps everything organised. Best AI image tool I have used by a wide margin.', stars: 5 },
+]
+
+const PRICING = [
+  { plan: 'Free',    price: '$0',   period: '/mo', features: ['50 images / month', '3 art styles', 'Basic prompt tools', 'Gallery access'],                  cta: 'Get Started', highlight: false },
+  { plan: 'Pro',     price: '$12',  period: '/mo', features: ['Unlimited images', 'All 120+ styles', 'Prompt enhancement AI', 'Collections & history', 'Priority generation'], cta: 'Start Free Trial', highlight: true  },
+  { plan: 'Studio',  price: '$39',  period: '/mo', features: ['Everything in Pro', 'Batch generation (x8)', 'API access', 'Team workspace', 'Dedicated support'],             cta: 'Contact Sales', highlight: false },
+]
+
+const SKELETON_BARS = ['100%', '80%', '60%']
 
 const fadeUp = {
   initial:     { opacity: 0, y: 28 },
   whileInView: { opacity: 1, y: 0  },
-  viewport:    { once: true, amount: 0.2 },
+  viewport:    { once: true, amount: 0.15 },
   transition:  { duration: 0.65 },
 }
 
-/* ─── Auth Modal ──────────────────────────────────────────── */
+/* ── Animated count badge ────────────────────────────────── */
+function CountBadge({ value, suffix, label }) {
+  const { scrollYProgress } = useScroll()
+  const animated = useTransform(scrollYProgress, [0, 0.35], [0, value])
+  const smooth   = useSpring(animated, { stiffness: 120, damping: 20 })
+  const rounded  = useTransform(smooth, v => value % 1 === 0 ? Math.round(v) : Number(v.toFixed(1)))
+  return (
+    <motion.div {...fadeUp} className={styles.statCard}
+      onMouseMove={e => {
+        const r = e.currentTarget.getBoundingClientRect()
+        e.currentTarget.style.setProperty('--sx', `${e.clientX - r.left}px`)
+        e.currentTarget.style.setProperty('--sy', `${e.clientY - r.top}px`)
+      }}>
+      <div className={styles.statValue}><motion.span>{rounded}</motion.span>{suffix}</div>
+      <p className={styles.statLabel}>{label}</p>
+    </motion.div>
+  )
+}
+
+/* ── Auth Modal ──────────────────────────────────────────── */
 function AuthModal({ defaultMode, onClose }) {
   const { login, signup } = useAuth()
   const [mode, setMode]       = useState(defaultMode || 'login')
@@ -51,11 +107,10 @@ function AuthModal({ defaultMode, onClose }) {
   const [confirm, setConfirm]   = useState('')
   const [error, setError]       = useState('')
 
-  const switchMode = (m) => { setMode(m); setError(''); setPassword(''); setConfirm('') }
+  const switchMode = m => { setMode(m); setError(''); setPassword(''); setConfirm('') }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    setError('')
+  const handleSubmit = e => {
+    e.preventDefault(); setError('')
     if (!username.trim() || !password.trim()) { setError('Please fill in all fields.'); return }
     if (mode === 'signup' && password !== confirm) { setError('Passwords do not match.'); return }
     mode === 'signup' ? signup(username.trim()) : login(username.trim())
@@ -65,7 +120,7 @@ function AuthModal({ defaultMode, onClose }) {
     <motion.div className={styles.modalOverlay}
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       onClick={onClose}>
-      <motion.div className={`${styles.modalCard} glass`}
+      <motion.div className={`${styles.modalCard} ${styles.glassPanel}`}
         initial={{ opacity: 0, scale: 0.93, y: 24 }}
         animate={{ opacity: 1, scale: 1,    y: 0  }}
         exit={{    opacity: 0, scale: 0.93, y: 24 }}
@@ -74,7 +129,6 @@ function AuthModal({ defaultMode, onClose }) {
 
         <button className={styles.modalClose} onClick={onClose}><X size={18}/></button>
 
-        {/* Tabs */}
         <div className={styles.tabs}>
           {['login','signup'].map(m => (
             <button key={m} className={`${styles.tab} ${mode === m ? styles.tabActive : ''}`}
@@ -92,13 +146,9 @@ function AuthModal({ defaultMode, onClose }) {
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
 
-            <div className={styles.formHeader}>
-              <h2 className={styles.formTitle}>
-                {mode === 'login' ? 'Welcome back' : 'Create account'}
-              </h2>
-              <p className={styles.formSub}>
-                {mode === 'login' ? 'Log in to start creating' : 'Join and generate today'}
-              </p>
+            <div>
+              <h2 className={styles.formTitle}>{mode === 'login' ? 'Welcome back' : 'Create account'}</h2>
+              <p className={styles.formSub}>{mode === 'login' ? 'Log in to start creating' : 'Join and generate today'}</p>
             </div>
 
             <div className={styles.field}>
@@ -106,7 +156,6 @@ function AuthModal({ defaultMode, onClose }) {
               <input className={styles.input} type="text" placeholder="Enter your username"
                 value={username} onChange={e => setUsername(e.target.value)} autoComplete="username"/>
             </div>
-
             <div className={styles.field}>
               <label className={styles.label}>Password</label>
               <input className={styles.input} type="password" placeholder="Enter your password"
@@ -126,16 +175,11 @@ function AuthModal({ defaultMode, onClose }) {
               )}
             </AnimatePresence>
 
-            {error && (
-              <motion.p className={styles.error} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                {error}
-              </motion.p>
-            )}
+            {error && <motion.p className={styles.error} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{error}</motion.p>}
 
             <motion.button type="submit" className={styles.submitBtn}
               whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-              {mode === 'login' ? 'Log In' : 'Create Account'}
-              <ArrowRight size={16}/>
+              {mode === 'login' ? 'Log In' : 'Create Account'} <ArrowRight size={15}/>
             </motion.button>
 
             <p className={styles.switchText}>
@@ -152,217 +196,452 @@ function AuthModal({ defaultMode, onClose }) {
   )
 }
 
-/* ─── Main Landing Page ───────────────────────────────────── */
+/* ── Main Landing Page ───────────────────────────────────── */
 export default function LandingPage() {
-  const [authMode, setAuthMode] = useState(null) // null | 'login' | 'signup'
-  const ctaRef = useRef(null)
+  const [authMode, setAuthMode] = useState(null)
+  const [cursor, setCursor]     = useState({ x: 0, y: 0, visible: false })
 
-  const scrollToCta = () => ctaRef.current?.scrollIntoView({ behavior: 'smooth' })
+  const floatingNodes = useMemo(() =>
+    Array.from({ length: 12 }, (_, i) => ({
+      id: i, size: 6 + ((i * 7) % 18),
+      left: `${8 + ((i * 9) % 84)}%`,
+      top:  `${6 + ((i * 11) % 88)}%`,
+      delay: i * 0.4, duration: 5 + (i % 4),
+    })), [])
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page}
+      onMouseMove={e => setCursor({ x: e.clientX, y: e.clientY, visible: true })}
+      onMouseLeave={() => setCursor(c => ({ ...c, visible: false }))}>
 
-      {/* ── Sticky Header ── */}
-      <motion.header className={styles.header}
-        initial={{ y: -64, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
+      {/* cursor glow */}
+      <div className={styles.cursorGlowWrap}>
+        <motion.div className={styles.cursorGlow}
+          animate={{ x: cursor.x - 80, y: cursor.y - 80, opacity: cursor.visible ? 1 : 0 }}
+          transition={{ type: 'spring', damping: 28, stiffness: 180, mass: 0.35 }}/>
+      </div>
+
+      {/* background layer */}
+      <div className={styles.bgLayer}>
+        <div className={styles.heroGrid}/>
+        <div className={styles.heroRadial}/>
+        {floatingNodes.map(n => (
+          <motion.span key={n.id} className={styles.floatNode}
+            style={{ left: n.left, top: n.top, width: n.size, height: n.size }}
+            animate={{ y: [0, -18, 0], opacity: [0.2, 0.8, 0.2], scale: [1, 1.2, 1] }}
+            transition={{ duration: n.duration, repeat: Infinity, ease: 'easeInOut', delay: n.delay }}/>
+        ))}
+        <motion.div className={styles.bgBlob1}
+          animate={{ y: [0, 30, 0], x: [0, 20, 0] }}
+          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}/>
+        <motion.div className={styles.bgBlob2}
+          animate={{ y: [0, -24, 0], x: [0, -28, 0] }}
+          transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}/>
+      </div>
+
+      {/* ── Header ── */}
+      <header className={styles.header}>
         <div className={styles.headerInner}>
-          <div className={styles.logoRow}>
-            <MoonLogo size={32}/>
-            <span className={styles.logoText}>Lunar<span className="gradient-text">AI</span></span>
-          </div>
+          <a href="#" className={styles.logoRow}>
+            <span className={styles.logoIcon}><Sparkles size={18}/></span>
+            <div>
+              <p className={styles.logoName}>Lunar<span className={styles.logoGrad}>AI</span></p>
+              <p className={styles.logoSub}>Text-to-Image Studio</p>
+            </div>
+          </a>
           <nav className={styles.headerNav}>
-            <a href="#features"  className={styles.navLink}>Features</a>
-            <a href="#howitworks" className={styles.navLink}>How it works</a>
-            <a href="#gallery"   className={styles.navLink}>Gallery</a>
-            <a href="#cta"       className={styles.navLink}>Get Started</a>
+            <a href="#features"   className={styles.navLink}>Features</a>
+            <a href="#workflow"   className={styles.navLink}>How it works</a>
+            <a href="#gallery"    className={styles.navLink}>Gallery</a>
+            <a href="#pricing"    className={styles.navLink}>Pricing</a>
+            <a href="#cta"        className={styles.navLink}>Start</a>
           </nav>
           <div className={styles.headerActions}>
-            <button className={styles.btnGhost} onClick={() => setAuthMode('login')}>Log In</button>
-            <button className={styles.btnPrimary} onClick={() => setAuthMode('signup')}>
-              Sign Up <ChevronRight size={14}/>
+            <button className={styles.btnGlass} onClick={() => setAuthMode('login')}>Log In</button>
+            <button className={styles.btnHero}  onClick={() => setAuthMode('signup')}>
+              Get Started <ChevronRight size={14}/>
             </button>
           </div>
         </div>
-      </motion.header>
+      </header>
 
-      {/* ── Hero ── */}
-      <section className={styles.heroSection}>
-        {/* floating nodes */}
-        {Array.from({ length: 10 }, (_, i) => (
-          <motion.span key={i} className={styles.floatNode}
-            style={{ left: `${8 + (i * 9) % 84}%`, top: `${6 + (i * 11) % 88}%`,
-                     width: 6 + (i * 7) % 18, height: 6 + (i * 7) % 18 }}
-            animate={{ y: [0, -16, 0], opacity: [0.2, 0.7, 0.2], scale: [1, 1.2, 1] }}
-            transition={{ duration: 5 + i % 4, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }}/>
-        ))}
+      <main>
+        {/* ── Hero ── */}
+        <section className={styles.heroSection}>
+          <div className={styles.heroGrid2col}>
 
-        <motion.div className={styles.heroBadge} {...fadeUp}>
-          <Sparkles size={14}/> Premium AI image creation
-        </motion.div>
-
-        <motion.h1 className={styles.heroTitle} {...fadeUp} transition={{ duration: 0.7, delay: 0.05 }}>
-          Turn Your Words Into<br/>
-          <span className="gradient-text">Stunning AI Images</span>
-        </motion.h1>
-
-        <motion.p className={styles.heroDesc} {...fadeUp} transition={{ duration: 0.7, delay: 0.1 }}>
-          Generate cinematic concepts, product scenes, artwork, and photoreal visuals
-          from a simple prompt with a fast, elegant creative workflow.
-        </motion.p>
-
-        <motion.div className={styles.heroCtas} {...fadeUp} transition={{ duration: 0.7, delay: 0.15 }}>
-          <button className={styles.btnHero} onClick={() => setAuthMode('signup')}>
-            Get Started <ArrowRight size={16}/>
-          </button>
-          <button className={styles.btnHeroGhost} onClick={() => { scrollToCta(); }}>
-            Explore Gallery
-          </button>
-        </motion.div>
-
-        {/* Stats row */}
-        <motion.div className={styles.statsRow} {...fadeUp} transition={{ duration: 0.7, delay: 0.2 }}>
-          {STATS.map(s => (
-            <div key={s.label} className={`${styles.statCard} glass`}>
-              <span className={styles.statValue}>{s.value}</span>
-              <span className={styles.statLabel}>{s.label}</span>
-            </div>
-          ))}
-        </motion.div>
-      </section>
-
-      {/* ── Features ── */}
-      <section id="features" className={styles.section}>
-        <motion.div className={styles.sectionHead} {...fadeUp}>
-          <div className={styles.sectionChip}>Core features</div>
-          <h2 className={styles.sectionTitle}>Premium tools for AI-first creators</h2>
-          <p className={styles.sectionSub}>Every interaction is tuned to feel instant, intelligent, and visually refined.</p>
-        </motion.div>
-        <div className={styles.featureGrid}>
-          {FEATURES.map(({ icon: Icon, title, desc }, i) => (
-            <motion.div key={title} className={`${styles.featureCard} glass`}
-              {...fadeUp} transition={{ duration: 0.55, delay: i * 0.08 }}
-              whileHover={{ y: -6 }}>
-              <div className={styles.featureIcon}><Icon size={20}/></div>
-              <h3 className={styles.featureTitle}>{title}</h3>
-              <p className={styles.featureDesc}>{desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── How it works ── */}
-      <section id="howitworks" className={styles.section}>
-        <div className={styles.howGrid}>
-          <motion.div {...fadeUp}>
-            <div className={styles.sectionChip}>How it works</div>
-            <h2 className={styles.sectionTitle}>From prompt to polished visual in three steps</h2>
-            <p className={styles.sectionSub}>A clear workflow with smart refinement and stunning output previews.</p>
-          </motion.div>
-          <div className={styles.stepsList}>
-            {STEPS.map((s, i) => (
-              <motion.div key={s.n} className={`${styles.stepCard} glass`}
-                {...fadeUp} transition={{ duration: 0.6, delay: i * 0.08 }}>
-                <div className={styles.stepNum}>{s.n}</div>
-                <div>
-                  <h3 className={styles.stepTitle}>{s.title}</h3>
-                  <p className={styles.stepDesc}>{s.desc}</p>
-                </div>
-                <motion.div className={styles.stepOrb}
-                  animate={{ rotate: i % 2 === 0 ? 360 : -360 }}
-                  transition={{ duration: 16 - i * 2, repeat: Infinity, ease: 'linear' }}>
-                  <span className={styles.stepOrbDot}/>
-                </motion.div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Gallery ── */}
-      <section id="gallery" className={styles.section}>
-        <motion.div className={styles.sectionHead} {...fadeUp}>
-          <div className={styles.sectionChip}>Gallery preview</div>
-          <h2 className={styles.sectionTitle}>A curated grid of vivid AI-generated inspiration</h2>
-        </motion.div>
-        <div className={styles.galleryGrid}>
-          {GALLERY.map((item, i) => (
-            <motion.div key={item.seed} className={styles.galleryCard}
-              {...fadeUp} transition={{ duration: 0.6, delay: i * 0.06 }}>
-              <div className={styles.galleryImgWrap}>
-                <img
-                  src={`https://picsum.photos/seed/${item.seed}/600/600`}
-                  alt={item.title}
-                  className={styles.galleryImg}
-                  loading="lazy"
-                />
+            {/* left */}
+            <motion.div {...fadeUp} className={styles.heroLeft}>
+              <div className={styles.glassChip}>
+                <Bot size={14} className={styles.chipIcon}/> Premium AI image creation for modern teams
               </div>
-              <div className={styles.galleryOverlay}>
-                <div>
-                  <p className={styles.galleryTag}>{item.tag}</p>
-                  <h3 className={styles.galleryTitle}>{item.title}</h3>
-                </div>
-                <span className={styles.galleryPreviewBtn}>Open preview</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── CTA ── */}
-      <section id="cta" ref={ctaRef} className={styles.ctaSection}>
-        <motion.div className={styles.ctaCard} {...fadeUp}>
-          <div className={styles.ctaGlow}/>
-          <div className={styles.ctaContent}>
-            <div>
-              <p className={styles.ctaEyebrow}>Start creating</p>
-              <h2 className={styles.ctaTitle}>Start Creating Now</h2>
-              <p className={styles.ctaDesc}>
-                Shape bold concepts, campaigns, and product visuals with a UI designed
-                to make AI creativity feel premium from the first click.
+              <h1 className={styles.heroTitle}>
+                Turn Your Words Into{' '}
+                <span className={styles.gradientText}>Stunning AI Images</span>
+              </h1>
+              <p className={styles.heroDesc}>
+                Generate cinematic concepts, product scenes, artwork, and photoreal visuals
+                from a simple prompt with a fast, elegant creative workflow.
               </p>
-              <div className={styles.ctaBtns}>
-                <button className={styles.btnHero} onClick={() => setAuthMode('signup')}>
-                  Create Free Account <ArrowRight size={16}/>
+              <div className={styles.heroCtas}>
+                <button className={styles.btnHeroPrimary} onClick={() => setAuthMode('signup')}>
+                  Generate Image <ArrowRight size={16}/>
                 </button>
-                <button className={styles.btnHeroGhost} onClick={() => setAuthMode('login')}>
-                  Log In
+                <button className={styles.btnHeroGlass} onClick={() => setAuthMode('login')}>
+                  Explore Gallery <MoveRight size={16}/>
                 </button>
               </div>
-            </div>
-            {/* animated queue preview */}
-            <div className={`${styles.ctaPreview} glass`}>
-              <p className={styles.ctaPreviewLabel}>Creative queue</p>
-              <div className={styles.ctaQueue}>
-                {['Editorial portrait · glowing rim light','Anime skyline · rain reflections','Luxury product shot · studio bloom'].map((line, i) => (
-                  <motion.div key={line} className={styles.ctaQueueItem}
-                    animate={{ x: [0, 6, 0] }}
-                    transition={{ duration: 4 + i, repeat: Infinity, ease: 'easeInOut' }}>
-                    <Zap size={12} className={styles.ctaQueueIcon}/> {line}
+              <div className={styles.statsRow}>
+                {STATS.map(s => <CountBadge key={s.label} {...s}/>)}
+              </div>
+            </motion.div>
+
+            {/* right — prompt lab card */}
+            <motion.div {...fadeUp} transition={{ duration: 0.8, delay: 0.1 }} className={styles.heroRight}>
+              <div className={styles.heroOrbitRing}/>
+              <div className={`${styles.promptCard} ${styles.glassPanel} ${styles.maskFade}`}>
+                <div className={styles.promptCardInner}>
+                  {/* spinning ring */}
+                  <motion.div className={styles.spinRing}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 14, repeat: Infinity, ease: 'linear' }}>
+                    <span className={styles.spinDot}/>
                   </motion.div>
+
+                  <div className={styles.promptCardContent}>
+                    <div className={styles.promptCardHeader}>
+                      <div>
+                        <p className={styles.promptCardEye}>Prompt Lab</p>
+                        <p className={styles.promptCardTitle}>Generate from imagination</p>
+                      </div>
+                      <span className={styles.liveChip}>Live Preview</span>
+                    </div>
+
+                    <div className={`${styles.promptBox} ${styles.glassPanel}`}>
+                      <p className={styles.promptBoxLabel}>Prompt</p>
+                      <div className={styles.promptBoxText}>
+                        A futuristic floating glass tower at dusk, luminous cyan and magenta reflections,
+                        cinematic atmosphere, ultra-detailed, premium editorial lighting.
+                      </div>
+                      <div className={styles.promptTags}>
+                        {['cinematic','photoreal','8k detail','soft glow'].map(t => (
+                          <span key={t} className={styles.glassChip}>{t}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className={styles.promptCardBottom}>
+                      <div className={`${styles.enhanceBox} ${styles.glassPanel}`}>
+                        <div className={styles.enhanceHeader}>
+                          <span className={styles.enhanceMuted}>Enhancement Engine</span>
+                          <span className={styles.enhancePrimary}>+ Prompt Boost</span>
+                        </div>
+                        <div className={styles.skeletonBars}>
+                          {SKELETON_BARS.map((w, i) => (
+                            <motion.div key={i} className={styles.skeletonBar}
+                              style={{ width: w }}
+                              animate={{ opacity: [0.35, 0.9, 0.35] }}
+                              transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.2 }}/>
+                          ))}
+                        </div>
+                      </div>
+
+                      <motion.div className={`${styles.previewImgBox} ${styles.glassPanel}`}
+                        whileHover={{ scale: 1.015 }}>
+                        <img
+                          src={imgArchitecture}
+                          alt="AI-generated architecture preview"
+                          className={styles.previewImg}/>
+                        <div className={styles.previewBadge}>
+                          <div>
+                            <p className={styles.previewBadgeTitle}>Rendering complete</p>
+                            <p className={styles.previewBadgeSub}>Refined composition · Premium mode</p>
+                          </div>
+                          <div className={styles.previewZapBtn}><Zap size={14}/></div>
+                        </div>
+                      </motion.div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ── Features ── */}
+        <section id="features" className={styles.section}>
+          <div className={styles.container}>
+            <motion.div {...fadeUp} className={styles.sectionHead}>
+              <div className={styles.glassChip}>Core features</div>
+              <h2 className={styles.sectionTitle}>Premium tools designed for AI-first creators</h2>
+              <p className={styles.sectionSub}>Every interaction is tuned to feel instant, intelligent, and visually refined.</p>
+            </motion.div>
+            <div className={styles.featureGrid}>
+              {FEATURE_CARDS.map(({ icon: Icon, title, desc }, i) => (
+                <motion.article key={title} {...fadeUp}
+                  transition={{ duration: 0.55, delay: i * 0.08 }}
+                  whileHover={{ y: -8 }}
+                  className={`${styles.featureCard} ${styles.glassPanel} ${styles.spotlightCard}`}
+                  onMouseMove={e => {
+                    const r = e.currentTarget.getBoundingClientRect()
+                    e.currentTarget.style.setProperty('--sx', `${e.clientX - r.left}px`)
+                    e.currentTarget.style.setProperty('--sy', `${e.clientY - r.top}px`)
+                  }}>
+                  <div className={styles.featureIcon}><Icon size={20}/></div>
+                  <h3 className={styles.featureTitle}>{title}</h3>
+                  <p className={styles.featureDesc}>{desc}</p>
+                </motion.article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── How it works ── */}
+        <section id="workflow" className={styles.section}>
+          <div className={`${styles.container} ${styles.howGrid}`}>
+            <motion.div {...fadeUp}>
+              <div className={styles.glassChip}>How it works</div>
+              <h2 className={styles.sectionTitle}>From prompt to polished visual in three smooth steps</h2>
+              <p className={styles.sectionSub}>A clear workflow with subtle motion, smart refinement, and stunning output previews.</p>
+            </motion.div>
+            <div className={styles.stepsList}>
+              {STEPS.map((s, i) => (
+                <motion.div key={s.n} {...fadeUp}
+                  transition={{ duration: 0.65, delay: i * 0.08 }}
+                  className={`${styles.stepCard} ${styles.glassPanel}`}>
+                  <div className={styles.stepNum}>{s.n}</div>
+                  <div>
+                    <h3 className={styles.stepTitle}>{s.title}</h3>
+                    <p className={styles.stepDesc}>{s.desc}</p>
+                  </div>
+                  <motion.div className={styles.stepOrb}
+                    animate={{ rotate: i % 2 === 0 ? 360 : -360 }}
+                    transition={{ duration: 18 - i * 2, repeat: Infinity, ease: 'linear' }}>
+                    <span className={styles.stepOrbDot}/>
+                  </motion.div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Gallery ── */}
+        <section id="gallery" className={styles.section}>
+          <div className={styles.container}>
+            <motion.div {...fadeUp} className={styles.galleryHead}>
+              <div>
+                <div className={styles.glassChip}>Gallery preview</div>
+                <h2 className={styles.sectionTitle}>A curated grid of vivid AI-generated inspiration</h2>
+              </div>
+              <p className={styles.gallerySub}>Hover to inspect styles, moods, and compositions designed to feel high-end and production ready.</p>
+            </motion.div>
+            <div className={styles.galleryGrid}>
+              {GALLERY.map((item, i) => (
+                <motion.article key={item.title} {...fadeUp}
+                  transition={{ duration: 0.6, delay: i * 0.06 }}
+                  className={`${styles.galleryCard} ${styles.glassPanel}`}>
+                  <div className={styles.galleryImgWrap}>
+                    <img src={item.img}
+                      alt={item.title} className={styles.galleryImg} loading="lazy"/>
+                  </div>
+                  <div className={styles.galleryOverlay}/>
+                  <div className={styles.galleryInfo}>
+                    <div>
+                      <p className={styles.galleryTag}>{item.tag}</p>
+                      <h3 className={styles.galleryTitle}>{item.title}</h3>
+                    </div>
+                    <span className={styles.galleryPreviewBtn}>Open preview</span>
+                  </div>
+                </motion.article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Why us + Performance ── */}
+        <section className={styles.section}>
+          <div className={`${styles.container} ${styles.whyGrid}`}>
+            <motion.div {...fadeUp} className={`${styles.whyCard} ${styles.glassPanel}`}>
+              <div className={styles.glassChip}>Why choose us</div>
+              <h2 className={styles.sectionTitle}>Built for speed, simplicity, and unmistakable AI power</h2>
+              <div className={styles.whyList}>
+                {WHY_US.map(line => (
+                  <div key={line} className={styles.whyItem}>
+                    <Check size={14} className={styles.whyCheck}/> {line}
+                  </div>
                 ))}
               </div>
+            </motion.div>
+
+            <div className={styles.perfCol}>
+              <motion.div {...fadeUp} className={`${styles.perfCard} ${styles.glassPanel}`}>
+                <div className={styles.perfHeader}>
+                  <div>
+                    <p className={styles.perfEye}>Performance layer</p>
+                    <h3 className={styles.perfTitle}>Realtime feel with premium polish</h3>
+                  </div>
+                  <span className={styles.glassChip}>Optimized UI</span>
+                </div>
+                <div className={styles.perfBars}>
+                  {PERF_BARS.map(({ label, pct }, i) => (
+                    <div key={label}>
+                      <div className={styles.perfBarRow}>
+                        <span className={styles.perfBarLabel}>{label}</span>
+                        <span className={styles.perfBarPct}>{pct}%</span>
+                      </div>
+                      <div className={styles.perfBarTrack}>
+                        <motion.div className={styles.perfBarFill}
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${pct}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.8, delay: 0.1 * i }}/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              <motion.div {...fadeUp} className={`${styles.trustCard} ${styles.glassPanel}`}>
+                <p className={styles.perfEye}>Trusted creative stack</p>
+                <div className={styles.trustBadges}>
+                  {TRUST_BADGES.map(b => (
+                    <motion.span key={b} whileHover={{ y: -3 }} className={styles.trustBadge}>{b}</motion.span>
+                  ))}
+                </div>
+              </motion.div>
             </div>
           </div>
-        </motion.div>
-      </section>
+        </section>
+
+        {/* ── Testimonials ── */}
+        <section className={styles.section}>
+          <div className={styles.container}>
+            <motion.div {...fadeUp} className={styles.sectionHead}>
+              <div className={styles.glassChip}>Testimonials</div>
+              <h2 className={styles.sectionTitle}>Loved by creators worldwide</h2>
+              <p className={styles.sectionSub}>See what designers, developers, and artists are saying about LunarAI.</p>
+            </motion.div>
+            <div className={styles.testimonialGrid}>
+              {TESTIMONIALS.map((t, i) => (
+                <motion.div key={t.name} {...fadeUp}
+                  transition={{ duration: 0.55, delay: i * 0.1 }}
+                  className={`${styles.testimonialCard} ${styles.glassPanel}`}>
+                  <div className={styles.testimonialStars}>
+                    {Array.from({ length: t.stars }).map((_, s) => (
+                      <Star key={s} size={13} className={styles.starIcon}/>
+                    ))}
+                  </div>
+                  <p className={styles.testimonialText}>"{t.text}"</p>
+                  <div className={styles.testimonialAuthor}>
+                    <div className={styles.testimonialAvatar}>{t.name[0]}</div>
+                    <div>
+                      <p className={styles.testimonialName}>{t.name}</p>
+                      <p className={styles.testimonialRole}>{t.role}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Pricing ── */}
+        <section id="pricing" className={styles.section}>
+          <div className={styles.container}>
+            <motion.div {...fadeUp} className={styles.sectionHead}>
+              <div className={styles.glassChip}>Pricing</div>
+              <h2 className={styles.sectionTitle}>Simple, transparent pricing</h2>
+              <p className={styles.sectionSub}>Start free, scale when you're ready. No hidden fees.</p>
+            </motion.div>
+            <div className={styles.pricingGrid}>
+              {PRICING.map((p, i) => (
+                <motion.div key={p.plan} {...fadeUp}
+                  transition={{ duration: 0.55, delay: i * 0.08 }}
+                  className={`${styles.pricingCard} ${styles.glassPanel} ${p.highlight ? styles.pricingHighlight : ''}`}>
+                  {p.highlight && <div className={styles.pricingBadge}>Most Popular</div>}
+                  <p className={styles.pricingPlan}>{p.plan}</p>
+                  <div className={styles.pricingPriceRow}>
+                    <span className={styles.pricingPrice}>{p.price}</span>
+                    <span className={styles.pricingPeriod}>{p.period}</span>
+                  </div>
+                  <ul className={styles.pricingFeatures}>
+                    {p.features.map(f => (
+                      <li key={f} className={styles.pricingFeature}>
+                        <Check size={13} className={styles.pricingCheck}/> {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    className={p.highlight ? styles.btnHeroPrimary : styles.btnGlass}
+                    onClick={() => setAuthMode('signup')}
+                    style={{ width: '100%', justifyContent: 'center' }}>
+                    {p.cta}
+                  </button>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── CTA ── */}
+        <section id="cta" className={styles.section}>
+          <div className={styles.container}>
+            <motion.div {...fadeUp} className={styles.ctaCard}>
+              <div className={styles.ctaGlow}/>
+              <div className={styles.ctaInner}>
+                <div>
+                  <p className={styles.ctaEye}>Start creating</p>
+                  <h2 className={styles.ctaTitle}>Start Creating Now</h2>
+                  <p className={styles.ctaDesc}>
+                    Shape bold concepts, campaigns, and product visuals with a UI designed
+                    to make AI creativity feel premium from the first click.
+                  </p>
+                  <div className={styles.ctaBtns}>
+                    <button className={styles.btnHeroPrimary} onClick={() => setAuthMode('signup')}>
+                      Generate Image <ArrowRight size={16}/>
+                    </button>
+                    <button className={styles.btnHeroGlass} onClick={() => setAuthMode('login')}>
+                      Explore Gallery
+                    </button>
+                  </div>
+                </div>
+
+                <div className={styles.ctaQueueWrap}>
+                  <div className={styles.ctaQueueInner}>
+                    <p className={styles.ctaQueueLabel}>Creative queue</p>
+                    <div className={styles.ctaQueue}>
+                      {['Editorial portrait · glowing rim light','Anime skyline · rain reflections','Luxury product shot · studio bloom'].map((line, i) => (
+                        <motion.div key={line} className={styles.ctaQueueItem}
+                          animate={{ x: [0, 8, 0] }}
+                          transition={{ duration: 4 + i, repeat: Infinity, ease: 'easeInOut' }}>
+                          {line}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={styles.ctaQueueBtns}>
+                    <button className={styles.btnGlass} onClick={() => setAuthMode('signup')} style={{ flex: 1 }}>Generate Image</button>
+                    <button className={styles.btnGlass} onClick={() => setAuthMode('login')}  style={{ flex: 1 }}>Explore Gallery</button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      </main>
 
       {/* ── Footer ── */}
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <div>
-            <div className={styles.logoRow} style={{ marginBottom: '0.25rem' }}>
-              <MoonLogo size={22}/>
-              <span className={styles.logoText} style={{ fontSize: '1rem' }}>
-                Lunar<span className="gradient-text">AI</span>
-              </span>
-            </div>
-            <p className={styles.footerSub}>Futuristic text-to-image experiences, crafted for premium storytelling.</p>
+            <p className={styles.footerBrand}>LunarAI</p>
+            <p className={styles.footerSub}>Futuristic text-to-image experiences, crafted for premium product storytelling.</p>
           </div>
           <div className={styles.footerLinks}>
-            <a href="#features"   className={styles.footerLink}>Features</a>
-            <a href="#gallery"    className={styles.footerLink}>Gallery</a>
-            <a href="#cta"        className={styles.footerLink}>Get started</a>
+            <a href="#features"  className={styles.footerLink}>Features</a>
+            <a href="#gallery"   className={styles.footerLink}>Gallery</a>
+            <a href="#pricing"   className={styles.footerLink}>Pricing</a>
+            <a href="#cta"       className={styles.footerLink}>Get started</a>
             <button className={styles.footerLink} onClick={() => setAuthMode('login')}>Log In</button>
             <button className={styles.footerLink} onClick={() => setAuthMode('signup')}>Sign Up</button>
           </div>
