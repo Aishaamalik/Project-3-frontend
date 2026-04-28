@@ -1,12 +1,14 @@
 
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import toast from 'react-hot-toast'
 import {
   ArrowRight, Bot, Gauge, ImagePlus, Layers3, MoveRight,
   Sparkles, WandSparkles, Zap, X, ChevronRight, Star,
   Shield, Cpu, Palette, Users, TrendingUp, Check
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { getFriendlyAuthError } from '../utils/authErrors'
 import MoonLogo from '../components/MoonLogo'
 import styles from './LandingPage.module.css'
 import imgArchitecture from '../assets/gallery-architecture.jpg'
@@ -65,9 +67,9 @@ const TESTIMONIALS = [
 ]
 
 const PRICING = [
-  { plan: 'Free',    price: '$0',   period: '/mo', features: ['50 images / month', '3 art styles', 'Basic prompt tools', 'Gallery access'],                  cta: 'Get Started', highlight: false },
-  { plan: 'Pro',     price: '$12',  period: '/mo', features: ['Unlimited images', 'All 120+ styles', 'Prompt enhancement AI', 'Collections & history', 'Priority generation'], cta: 'Start Free Trial', highlight: true  },
-  { plan: 'Studio',  price: '$39',  period: '/mo', features: ['Everything in Pro', 'Batch generation (x8)', 'API access', 'Team workspace', 'Dedicated support'],             cta: 'Contact Sales', highlight: false },
+  { plan: 'Starter Pack',  price: '$5',  period: '', features: ['200 tokens', 'One-time purchase', 'Great for quick tests'],                     cta: 'Choose Package', highlight: false },
+  { plan: 'Pro Pack',      price: '$10', period: '', features: ['500 tokens', 'One-time purchase', 'Best value for regular creators'],          cta: 'Choose Package', highlight: true  },
+  { plan: 'Ultimate Pack', price: '$20', period: '', features: ['1200 tokens', 'One-time purchase', 'Highest token bundle for heavy generation'], cta: 'Choose Package', highlight: false },
 ]
 
 const SKELETON_BARS = ['100%', '80%', '60%']
@@ -124,20 +126,51 @@ function CountBadge({ value, suffix, label }) {
 
 /* ── Auth Modal ──────────────────────────────────────────── */
 function AuthModal({ defaultMode, onClose }) {
-  const { login, signup } = useAuth()
+  const { login, signup, requestPasswordReset } = useAuth()
   const [mode, setMode]       = useState(defaultMode || 'login')
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm]   = useState('')
+  const [isSendingReset, setIsSendingReset] = useState(false)
   const [error, setError]       = useState('')
 
   const switchMode = m => { setMode(m); setError(''); setPassword(''); setConfirm('') }
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault(); setError('')
-    if (!username.trim() || !password.trim()) { setError('Please fill in all fields.'); return }
+    if (!email.trim() || !password.trim()) { setError('Please fill in all fields.'); return }
     if (mode === 'signup' && password !== confirm) { setError('Passwords do not match.'); return }
-    mode === 'signup' ? signup(username.trim()) : login(username.trim())
+    try {
+      if (mode === 'signup') {
+        await signup({ email: email.trim(), password })
+        toast.success('Verification email sent. Please verify first, then log in.')
+      } else {
+        await login({ email: email.trim(), password })
+        toast.success('Logged in successfully!')
+      }
+      onClose()
+    } catch (err) {
+      const message = err?.message || getFriendlyAuthError(err)
+      setError(message)
+    }
+  }
+
+  const handleForgotPassword = async () => {
+    setError('')
+    if (!email.trim()) {
+      setError('Enter your email first, then click Forgot password.')
+      return
+    }
+
+    try {
+      setIsSendingReset(true)
+      await requestPasswordReset(email)
+      toast.success('Password reset link sent. Please check your email inbox.')
+    } catch (err) {
+      setError(err?.message || getFriendlyAuthError(err, 'Could not send password reset email. Please try again.'))
+    } finally {
+      setIsSendingReset(false)
+    }
   }
 
   return (
@@ -176,16 +209,26 @@ function AuthModal({ defaultMode, onClose }) {
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label}>Username</label>
-              <input className={styles.input} type="text" placeholder="Enter your username"
-                value={username} onChange={e => setUsername(e.target.value)} autoComplete="username"/>
+              <label className={styles.label}>Email</label>
+              <input className={styles.input} type="email" placeholder="john.doe@example.com"
+                value={email} onChange={e => setEmail(e.target.value)} autoComplete="username"/>
             </div>
             <div className={styles.field}>
               <label className={styles.label}>Password</label>
-              <input className={styles.input} type="password" placeholder="Enter your password"
+              <input className={styles.input} type="password" placeholder="********"
                 value={password} onChange={e => setPassword(e.target.value)}
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}/>
             </div>
+            {mode === 'login' && (
+              <button
+                type="button"
+                className={styles.switchLink}
+                onClick={handleForgotPassword}
+                disabled={isSendingReset}
+              >
+                {isSendingReset ? 'Sending reset link...' : 'Forgot password?'}
+              </button>
+            )}
 
             <AnimatePresence>
               {mode === 'signup' && (
@@ -193,7 +236,7 @@ function AuthModal({ defaultMode, onClose }) {
                   initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}>
                   <label className={styles.label}>Confirm Password</label>
-                  <input className={styles.input} type="password" placeholder="Confirm your password"
+                  <input className={styles.input} type="password" placeholder="********"
                     value={confirm} onChange={e => setConfirm(e.target.value)} autoComplete="new-password"/>
                 </motion.div>
               )}
@@ -574,8 +617,8 @@ export default function LandingPage() {
           <div className={styles.container}>
             <motion.div {...fadeUp} className={styles.sectionHead}>
               <div className={styles.glassChip}>Pricing</div>
-              <h2 className={styles.sectionTitle}>Simple, transparent pricing</h2>
-              <p className={styles.sectionSub}>Start free, scale when you're ready. No hidden fees.</p>
+              <h2 className={styles.sectionTitle}>Token packages that match checkout</h2>
+              <p className={styles.sectionSub}>Each generated image costs 10 tokens. Buy only what you need.</p>
             </motion.div>
             <div className={styles.pricingGrid}>
               {PRICING.map((p, i) => (

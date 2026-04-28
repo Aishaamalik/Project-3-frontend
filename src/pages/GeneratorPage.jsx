@@ -2,7 +2,10 @@ import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { Wand2, Layers, ChevronDown, ChevronUp } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
+import { useAuth } from '../context/AuthContext'
+import { generateImage } from '../services/api'
 import PromptInput from '../components/generator/PromptInput'
 import StyleSelector from '../components/generator/StyleSelector'
 import SizeSelector from '../components/generator/SizeSelector'
@@ -37,6 +40,8 @@ const itemVariants = {
 
 export default function GeneratorPage() {
   const { addToHistory, settings } = useApp()
+  const { refreshMe } = useAuth()
+  const navigate = useNavigate()
   const [prompt, setPrompt]       = useState('')
   const [style, setStyle]         = useState(settings.defaultStyle || 'cinematic')
   const [size, setSize]           = useState(settings.defaultSize  || '512x512')
@@ -46,6 +51,7 @@ export default function GeneratorPage() {
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [negPrompt, setNegPrompt] = useState(settings.negativePrompt || '')
   const [seed, setSeed]           = useState('')
+  const [showOutOfTokens, setShowOutOfTokens] = useState(false)
 
   // Sync settings defaults
   useEffect(() => {
@@ -62,23 +68,56 @@ export default function GeneratorPage() {
 
   const handleGenerate = useCallback(async () => {
     if (!prompt.trim()) { toast.error('Please enter a prompt first'); return }
+    const normalizedSeed = seed.trim()
+    if (normalizedSeed && !/^\d+$/.test(normalizedSeed)) {
+      toast.error('Seed must be a non-negative whole number')
+      return
+    }
     setLoading(true)
     setResults([])
 
     const count = Math.min(batchCount, 4)
-    await new Promise(r => setTimeout(r, 1500 + count * 400))
 
-    const [w, h] = size.split('x')
-    const newImages = Array.from({ length:count }, (_, i) => {
-      const s = (seed || prompt.replace(/\s+/g,'').slice(0,8)) + Date.now() + i
-      return { id:Date.now()+i, url:`https://picsum.photos/seed/${s}/${w}/${h}`, prompt, style, size, createdAt:new Date() }
-    })
+    try {
+      const requests = Array.from({ length: count }, () =>
+        generateImage({
+          prompt,
+          style,
+          size,
+          negative_prompt: negPrompt.trim(),
+          seed: normalizedSeed ? Number(normalizedSeed) : undefined,
+        })
+      )
+      const responses = await Promise.all(requests)
 
-    setResults(newImages)
-    newImages.forEach(img => addToHistory(img))
-    setLoading(false)
-    toast.success(count > 1 ? `${count} images generated!` : 'Image generated!')
-  }, [prompt, style, size, batchCount, seed, addToHistory])
+      const newImages = responses.map((response, index) => ({
+        id: Date.now() + index,
+        url: response.image_url,
+        prompt,
+        style,
+        size,
+        negativePrompt: negPrompt.trim(),
+        seed: normalizedSeed || null,
+        createdAt: new Date(),
+      }))
+
+      setResults(newImages)
+      newImages.forEach((img) => addToHistory(img))
+      if (typeof responses[responses.length - 1]?.tokens_left === 'number') {
+        await refreshMe()
+      }
+      toast.success(count > 1 ? `${count} images generated!` : 'Image generated!')
+    } catch (error) {
+      const detail = error?.response?.data?.detail
+      if (error?.response?.status === 402 || detail?.code === 'INSUFFICIENT_TOKENS') {
+        setShowOutOfTokens(true)
+      }
+      const message = detail?.message || detail || error?.message || 'Failed to generate image. Please try again.'
+      toast.error(message)
+    } finally {
+      setLoading(false)
+    }
+  }, [prompt, style, size, batchCount, negPrompt, seed, addToHistory, refreshMe])
 
   const handleKeyDown = (e) => {
     if (e.key==='Enter' && (e.metaKey || e.ctrlKey)) handleGenerate()
@@ -153,12 +192,12 @@ export default function GeneratorPage() {
                 <div className={styles.advRow}>
                   <label className={styles.advLabel}>Negative Prompt</label>
                   <textarea className={styles.advTextarea} rows={2}
-                    placeholder="What to avoid: blurry, low quality, watermark..."
+                    placeholder="blurry, low quality, watermark"
                     value={negPrompt} onChange={e => setNegPrompt(e.target.value)}/>
                 </div>
                 <div className={styles.advRow}>
                   <label className={styles.advLabel}>Seed <span className={styles.advHint}>(leave blank for random)</span></label>
-                  <input className={styles.advInput} placeholder="e.g. 42"
+                  <input className={styles.advInput} placeholder="42"
                     value={seed} onChange={e => setSeed(e.target.value)}/>
                 </div>
               </motion.div>
@@ -193,6 +232,29 @@ export default function GeneratorPage() {
           )}
         </AnimatePresence>
       </div>
+      <AnimatePresence>
+        {showOutOfTokens && (
+          <motion.div className={styles.modalOverlay} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div className={styles.modalCard} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }}>
+              <h3>Enjoying the app?</h3>
+              <p>Continue creating amazing images by getting more tokens.</p>
+              <button
+                type="button"
+                className={styles.modalBtn}
+                onClick={() => {
+                  setShowOutOfTokens(false)
+                  navigate('/packages')
+                }}
+              >
+                Check Packages
+              </button>
+              <button type="button" className={styles.modalGhostBtn} onClick={() => setShowOutOfTokens(false)}>
+                Close
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   )
 }

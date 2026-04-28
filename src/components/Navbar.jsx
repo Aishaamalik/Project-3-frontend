@@ -3,7 +3,6 @@ import { Menu, X, Settings, Keyboard, LogOut } from 'lucide-react'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import MoonLogo from './MoonLogo'
-import MoonPhase from './MoonPhase'
 import KeyboardShortcutsModal from './KeyboardShortcutsModal'
 import { useAuth } from '../context/AuthContext'
 import styles from './Navbar.module.css'
@@ -14,6 +13,7 @@ const links = [
   { to:'/gallery',     label:'Gallery'     },
   { to:'/collections', label:'Collections' },
   { to:'/stats',       label:'Stats'       },
+  { to:'/packages',    label:'Packages'    },
 ]
 
 export default function Navbar() {
@@ -52,10 +52,10 @@ export default function Navbar() {
           </ul>
 
           <div className={styles.right}>
-            <div className={styles.desktopOnly}><MoonPhase/></div>
             {user && (
               <span className={styles.username}>👤 {user.username}</span>
             )}
+            {user && <span className={styles.username}>🪙 {user.tokens ?? 0}</span>}
             <motion.button className={styles.iconBtn} onClick={() => setShowKeys(true)}
               whileHover={{ scale:1.05 }} whileTap={{ scale:0.9 }} title="Keyboard shortcuts">
               <Keyboard size={16}/>
